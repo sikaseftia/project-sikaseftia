@@ -1,9 +1,11 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { likePost, unlikePost, type LikeablePost } from "@/features/likes/api";
+import { useMutation, useQueryClient, type InfiniteData } from "@tanstack/react-query";
+import { likePost, unlikePost } from "@/features/likes/api";
+import type { FeedPage } from "@/features/posts/feed";
 
 type ToggleVars = { postId: string; liked: boolean };
+type Feed = InfiniteData<FeedPage>;
 
 /**
  * Like / unlike dengan Optimistic UI:
@@ -19,18 +21,24 @@ export function useToggleLike(token: string) {
     onMutate: async ({ postId, liked }) => {
       // Hentikan refetch yang sedang jalan supaya tidak menimpa perubahan optimistic.
       await queryClient.cancelQueries({ queryKey: ["feed"] });
-      const previous = queryClient.getQueryData<LikeablePost[]>(["feed"]);
+      const previous = queryClient.getQueryData<Feed>(["feed"]);
 
-      queryClient.setQueryData<LikeablePost[]>(["feed"], (posts) =>
-        posts?.map((post) =>
-          String(post.id) === postId
-            ? {
-                ...post,
-                isLiked: !liked,
-                likesCount: Math.max(0, (post.likesCount ?? 0) + (liked ? -1 : 1)),
-              }
-            : post,
-        ),
+      queryClient.setQueryData<Feed>(["feed"], (feed) =>
+        feed && {
+          ...feed,
+          pages: feed.pages.map((page) => ({
+            ...page,
+            items: page.items.map((post) =>
+              String(post.id) === postId
+                ? {
+                    ...post,
+                    isLiked: !liked,
+                    likesCount: Math.max(0, (post.likesCount ?? 0) + (liked ? -1 : 1)),
+                  }
+                : post,
+            ),
+          })),
+        },
       );
 
       return { previous };

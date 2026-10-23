@@ -19,7 +19,7 @@ export default function FollowingPage() {
 
   return (
     <section className="flex flex-col gap-4 p-6">
-      <Link href={`/users/${username}`} className="text-sm text-neutral-400">
+      <Link href={`/profile/${username}`} className="text-sm text-neutral-400">
         ← @{username}
       </Link>
       <h1 className="text-base font-semibold">Following</h1>

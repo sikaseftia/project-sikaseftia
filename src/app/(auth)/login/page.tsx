@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -41,13 +42,17 @@ export default function LoginPage() {
       : mutation.error?.message;
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-sm rounded-2xl border border-neutral-900 bg-neutral-950 p-6">
-        <h1 className="text-center text-xl font-semibold">Sociality</h1>
-        <h2 className="mt-4 text-center text-lg font-semibold">Welcome Back!</h2>
+    <div className="flex min-h-screen items-center justify-center px-6 py-10">
+      {/* Ukuran kartu dan input mengikuti layar Login di Figma (kartu ±344px dalam frame 393px). */}
+      <div className="w-full max-w-[344px] rounded-xl border border-white/10 bg-black/60 px-5 py-6">
+        <div className="flex items-center justify-center gap-2 text-base font-semibold">
+          <Image src="/logo.png" alt="" width={24} height={24} />
+          Sociality
+        </div>
+        <h1 className="mt-5 text-center text-base font-semibold">Welcome Back!</h1>
 
         <form
-          className="mt-6 flex flex-col gap-4"
+          className="mt-5 flex flex-col gap-3"
           onSubmit={handleSubmit((values) => mutation.mutate(values))}
           noValidate
         >
@@ -56,6 +61,7 @@ export default function LoginPage() {
             type="email"
             autoComplete="email"
             placeholder="Enter your email"
+            compact
             error={errors.email?.message}
             {...register("email")}
           />
@@ -64,6 +70,7 @@ export default function LoginPage() {
             type="password"
             autoComplete="current-password"
             placeholder="Enter your password"
+            compact
             error={errors.password?.message}
             {...register("password")}
           />
@@ -77,15 +84,15 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={mutation.isPending}
-            className="h-11 rounded-full bg-violet-600 text-sm font-medium disabled:opacity-60"
+            className="mt-1 h-9 rounded-lg bg-brand text-sm font-medium disabled:opacity-60"
           >
             {mutation.isPending ? "Memproses…" : "Login"}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-neutral-400">
+        <p className="mt-4 text-center text-xs text-neutral-400">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="font-medium text-violet-400">
+          <Link href="/register" className="font-medium text-brand-soft">
             Register
           </Link>
         </p>

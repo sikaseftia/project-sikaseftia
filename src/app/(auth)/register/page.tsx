@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -52,13 +53,17 @@ export default function RegisterPage() {
   });
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-sm rounded-2xl border border-neutral-900 bg-neutral-950 p-6">
-        <h1 className="text-center text-xl font-semibold">Sociality</h1>
-        <h2 className="mt-4 text-center text-lg font-semibold">Register</h2>
+    <div className="flex min-h-screen items-center justify-center px-6 py-10">
+      {/* Kartu mengikuti layar Register di Figma, sama dengan halaman Login. */}
+      <div className="w-full max-w-[344px] rounded-xl border border-white/10 bg-black/60 px-5 py-6">
+        <div className="flex items-center justify-center gap-2 text-base font-semibold">
+          <Image src="/logo.png" alt="" width={24} height={24} />
+          Sociality
+        </div>
+        <h2 className="mt-5 text-center text-base font-semibold">Register</h2>
 
         <form
-          className="mt-6 flex flex-col gap-4"
+          className="mt-5 flex flex-col gap-3"
           onSubmit={handleSubmit((values) => mutation.mutate(values))}
           noValidate
         >
@@ -67,6 +72,7 @@ export default function RegisterPage() {
             placeholder="Enter your name"
             error={errors.name?.message}
             {...register("name")}
+            compact
           />
           <FormField
             label="Username"
@@ -74,6 +80,7 @@ export default function RegisterPage() {
             autoComplete="username"
             error={errors.username?.message}
             {...register("username")}
+            compact
           />
           <FormField
             label="Email"
@@ -82,6 +89,7 @@ export default function RegisterPage() {
             autoComplete="email"
             error={errors.email?.message}
             {...register("email")}
+            compact
           />
           <FormField
             label="Number Phone"
@@ -90,6 +98,7 @@ export default function RegisterPage() {
             autoComplete="tel"
             error={errors.phone?.message}
             {...register("phone")}
+            compact
           />
           <FormField
             label="Password"
@@ -98,6 +107,7 @@ export default function RegisterPage() {
             autoComplete="new-password"
             error={errors.password?.message}
             {...register("password")}
+            compact
           />
           <FormField
             label="Confirm Password"
@@ -106,6 +116,7 @@ export default function RegisterPage() {
             autoComplete="new-password"
             error={errors.confirmPassword?.message}
             {...register("confirmPassword")}
+            compact
           />
 
           {mutation.error && (
@@ -117,15 +128,15 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={mutation.isPending}
-            className="h-11 rounded-full bg-violet-600 text-sm font-medium disabled:opacity-60"
+            className="mt-1 h-9 rounded-lg bg-brand text-sm font-medium disabled:opacity-60"
           >
             {mutation.isPending ? "Memproses…" : "Submit"}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-neutral-400">
+        <p className="mt-4 text-center text-xs text-neutral-400">
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-violet-400">
+          <Link href="/login" className="font-medium text-brand-soft">
             Log in
           </Link>
         </p>

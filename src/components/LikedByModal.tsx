@@ -35,14 +35,22 @@ export default function LikedByModal({ postId, token, onClose }: Props) {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Disukai oleh"
+        aria-label="Likes"
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[70vh] w-full max-w-sm flex-col rounded-t-2xl border border-neutral-800 bg-neutral-950 p-4 sm:rounded-2xl"
+        className="flex max-h-[70vh] w-full max-w-[393px] flex-col rounded-t-2xl border border-neutral-800 bg-neutral-950 px-4 pb-5 pt-4 sm:rounded-2xl"
       >
+        {/* Figma: judul "Likes" di kiri dan tombol X di kanan. */}
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-base font-semibold">Disukai oleh</h2>
-          <button type="button" onClick={onClose} className="text-sm text-neutral-400">
-            Tutup
+          <h2 className="text-base font-semibold">Likes</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Tutup"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-neutral-300 hover:bg-neutral-900"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
@@ -53,7 +61,7 @@ export default function LikedByModal({ postId, token, onClose }: Props) {
               {error.message}
             </p>
           )}
-          {data && <UserList users={data} emptyText="Belum ada yang menyukai post ini." />}
+          {data && <UserList users={data} token={token} emptyText="Belum ada yang menyukai post ini." />}
         </div>
       </div>
     </div>

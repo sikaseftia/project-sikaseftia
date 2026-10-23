@@ -52,7 +52,10 @@ export async function getUser(username: string, token?: string | null): Promise<
     Partial<UserProfile> & { profile?: Partial<UserProfile>; stats?: Counts; counts?: Counts }
   >(`/api/users/${encodeURIComponent(username)}`, { token });
 
-  const p = (res.profile ?? res) as UserProfile;
+  // Profil publik tidak boleh membawa email dan nomor HP, jadi keduanya dibuang di sini.
+  const p = { ...(res.profile ?? res) } as UserProfile & { email?: string };
+  delete p.email;
+  delete p.phone;
   const counts = res.counts ?? res.stats;
 
   return {
@@ -65,8 +68,22 @@ export async function getUser(username: string, token?: string | null): Promise<
   };
 }
 
-export function updateMe(token: string, input: ProfileUpdateInput) {
-  return apiFetch<UserProfile>("/api/me", { method: "PATCH", token, body: input });
+/**
+ * Update profil (PATCH /api/me). Sesuai Swagger: multipart/form-data dengan field
+ * name, username, phone, bio, dan avatar (PNG/JPG/WEBP, maks 5MB).
+ * Jika ada file avatar, semua field dikirim sebagai multipart; jika tidak, cukup field teks.
+ */
+export function updateMe(token: string, input: ProfileUpdateInput & { avatar?: File | null }) {
+  const { avatar, ...fields } = input;
+  if (avatar) {
+    const form = new FormData();
+    for (const [key, value] of Object.entries(fields)) {
+      if (value !== undefined) form.append(key, value);
+    }
+    form.append("avatar", avatar);
+    return apiFetch<UserProfile>("/api/me", { method: "PATCH", token, body: form });
+  }
+  return apiFetch<UserProfile>("/api/me", { method: "PATCH", token, body: fields });
 }
 
 export function searchUsers(q: string, token?: string | null) {
@@ -85,4 +102,18 @@ export function getFollowing(username: string, token?: string | null) {
   return apiFetch<unknown>(`/api/users/${encodeURIComponent(username)}/following`, { token }).then(
     (res) => toList<UserSummary>(res),
   );
+}
+
+/**
+ * Upload foto profil.
+ * CATATAN: endpoint dan nama field ("/api/me/avatar", "avatar") BELUM TERVERIFIKASI di Swagger.
+ * Sesuaikan dua nilai ini dengan dokumentasi backend; bagian lain tidak perlu diubah.
+ */
+export const AVATAR_ENDPOINT = "/api/me/avatar";
+export const AVATAR_FIELD = "avatar";
+
+export function uploadAvatar(token: string, file: File) {
+  const form = new FormData();
+  form.append(AVATAR_FIELD, file);
+  return apiFetch<unknown>(AVATAR_ENDPOINT, { method: "POST", token, body: form });
 }

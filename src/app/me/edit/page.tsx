@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -13,8 +13,15 @@ import { updateMe } from "@/features/users/api";
 import { editProfileSchema, type EditProfileValues } from "@/schemas/profile";
 import { useAppSelector } from "@/store/hooks";
 
+const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
+
 function EditProfileContent() {
   const router = useRouter();
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const token = useAppSelector((state) => state.auth.token) as string;
 
@@ -31,7 +38,7 @@ function EditProfileContent() {
     formState: { errors },
   } = useForm<EditProfileValues>({
     resolver: zodResolver(editProfileSchema),
-    defaultValues: { name: "", username: "", phone: "", bio: "" },
+    defaultValues: { name: "", username: "", bio: "" },
   });
 
   // Isi form begitu data profil tersedia.
@@ -40,35 +47,64 @@ function EditProfileContent() {
       reset({
         name: me.name ?? "",
         username: me.username ?? "",
-        phone: (me.phone as string | null | undefined) ?? "",
         bio: me.bio ?? "",
       });
     }
   }, [me, reset]);
+
+  // Lepaskan URL preview saat foto diganti atau halaman ditutup.
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  function onPickFile(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // agar file yang sama bisa dipilih ulang
+    if (!file) return;
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      setFileError("Format foto harus JPG, PNG, atau WEBP.");
+      return;
+    }
+    if (file.size > MAX_AVATAR_BYTES) {
+      setFileError("Ukuran foto maksimal 5 MB.");
+      return;
+    }
+    setFileError(null);
+    setAvatarFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  }
 
   const mutation = useMutation({
     mutationFn: (values: EditProfileValues) =>
       updateMe(token, {
         name: values.name,
         username: values.username,
-        phone: values.phone || undefined,
         bio: values.bio ?? "",
+        avatar: avatarFile,
       }),
-    onSuccess: () => {
-      // Data profil lama tidak dipakai lagi; ambil ulang dari server.
+    // Teks profil bisa tersimpan walaupun upload foto gagal, jadi cache dibersihkan di kedua kondisi.
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["me"] });
+    },
+    onSuccess: () => {
       router.replace("/me");
     },
   });
 
+  const serverAvatar = me?.avatarUrl as string | null | undefined;
+  const avatarUrl = previewUrl ?? serverAvatar;
+  const initial = (me?.name ?? "?").charAt(0).toUpperCase();
+
   return (
-    <section className="flex flex-col gap-6 p-6">
+    <section className="flex flex-col gap-6 px-4 py-5">
       <div className="flex items-center justify-between">
-        <Link href="/me" className="text-sm text-neutral-400">
-          Batal
+        <Link href="/me" aria-label="Kembali" className="text-lg text-neutral-300">
+          ←
         </Link>
         <h1 className="text-base font-semibold">Edit Profile</h1>
-        <span className="w-10" />
+        <span className="w-4" />
       </div>
 
       {meError && (
@@ -76,6 +112,41 @@ function EditProfileContent() {
           Profil gagal dimuat: {meError.message}
         </p>
       )}
+
+      {/* Foto profil: pratinjau langsung, diunggah saat Save Changes. */}
+      <div className="flex flex-col items-center gap-3">
+        <span className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-neutral-800 text-2xl font-semibold">
+          {avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            initial
+          )}
+        </span>
+        <input
+          ref={fileInput}
+          type="file"
+          accept={ACCEPTED_TYPES.join(",")}
+          onChange={onPickFile}
+          className="hidden"
+          aria-label="Pilih foto profil"
+        />
+        <button
+          type="button"
+          onClick={() => fileInput.current?.click()}
+          className="rounded-lg border border-neutral-700 px-3 py-1.5 text-xs text-neutral-200"
+        >
+          Change Photo
+        </button>
+        {avatarFile && (
+          <p className="text-xs text-neutral-500">Foto baru akan disimpan saat kamu menekan Save Changes.</p>
+        )}
+        {fileError && (
+          <p role="alert" className="text-xs text-red-400">
+            {fileError}
+          </p>
+        )}
+      </div>
 
       <form
         className="flex flex-col gap-4"
@@ -89,13 +160,6 @@ function EditProfileContent() {
           error={errors.username?.message}
           {...register("username")}
         />
-        <FormField
-          label="Number Phone"
-          type="tel"
-          autoComplete="tel"
-          error={errors.phone?.message}
-          {...register("phone")}
-        />
         <FormField label="Bio" error={errors.bio?.message} {...register("bio")} />
 
         {mutation.error && (
@@ -107,9 +171,9 @@ function EditProfileContent() {
         <button
           type="submit"
           disabled={mutation.isPending || !me}
-          className="h-11 rounded-full bg-violet-600 text-sm font-medium disabled:opacity-60"
+          className="h-11 rounded-lg bg-brand text-sm font-medium disabled:opacity-60"
         >
-          {mutation.isPending ? "Menyimpan…" : "Save"}
+          {mutation.isPending ? "Menyimpan…" : "Save Changes"}
         </button>
       </form>
     </section>

@@ -12,6 +12,14 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Warna brand, diambil dari screenshot Figma (layar Login dan Feed). */
+@theme {
+  --color-brand: #6143e8; /* tombol utama, tombol + navigasi */
+  --color-brand-hover: #5235b8; /* gradien bawah layar auth */
+  --color-brand-soft: #9983ee; /* link dan aksen teks */
+  --color-surface: #0d1018; /* latar input dan kartu */
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
@@ -23,4 +31,10 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Fokus ring untuk navigasi keyboard (aksesibilitas, sesuai PDF). */
+:focus-visible {
+  outline: 2px solid #6143e8;
+  outline-offset: 2px;
 }

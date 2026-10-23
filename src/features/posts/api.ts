@@ -28,14 +28,18 @@ export type Post = {
 };
 
 /** Menyamakan nama field backend (likeCount, likedByMe, savedByMe) dengan nama yang dipakai di UI. */
-export function normalizePost(
-  raw: Post,
-): Post & { likesCount: number; isLiked: boolean; isSaved: boolean } {
+export function normalizePost(raw: Post): Post & {
+  likesCount: number;
+  isLiked: boolean;
+  isSaved: boolean;
+  commentsCount: number;
+} {
   return {
     ...raw,
     likesCount: raw.likesCount ?? raw.likeCount ?? 0,
     isLiked: Boolean(raw.isLiked ?? raw.likedByMe),
     isSaved: Boolean(raw.isSaved ?? raw.savedByMe),
+    commentsCount: raw.commentsCount ?? raw.commentCount ?? 0,
   };
 }
 
