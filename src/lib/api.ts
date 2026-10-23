@@ -2,11 +2,14 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 export class ApiError extends Error {
   status: number;
+  /** Isi lengkap respons error dari backend (berguna untuk melihat field yang ditolak). */
+  details: unknown;
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, details?: unknown) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.details = details;
   }
 }
 
@@ -41,7 +44,7 @@ export async function apiFetch<T>(
   if (!res.ok) {
     const raw = data?.message ?? data?.error ?? `Request gagal (${res.status})`;
     const message = Array.isArray(raw) ? raw.join(", ") : String(raw);
-    throw new ApiError(res.status, message);
+    throw new ApiError(res.status, message, data);
   }
 
   // Backend membungkus respons sukses dengan { success, message, data }. Ambil isi data-nya.

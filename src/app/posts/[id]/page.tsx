@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMe } from "@/features/auth/api";
 import { deletePost, getPost, getPostAuthor, getPostImage } from "@/features/posts/api";
+import CommentSection from "@/components/CommentSection";
 import { useAppSelector } from "@/store/hooks";
 
 export default function PostDetailPage() {
@@ -115,6 +116,10 @@ export default function PostDetailPage() {
             </div>
           )}
         </div>
+      )}
+
+      {token && (
+        <CommentSection postId={id} token={token} myUsername={me.data?.username} />
       )}
     </section>
   );

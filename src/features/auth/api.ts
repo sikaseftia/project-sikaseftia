@@ -62,6 +62,21 @@ export async function login(input: LoginInput): Promise<string> {
   return token;
 }
 
-export function getMe(token: string) {
-  return apiFetch<User & Record<string, unknown>>("/api/me", { token });
+/** Respons /api/me (sudah diverifikasi dari Network tab): { profile: {...}, stats: {...} }. */
+type MeResponse = {
+  profile: User & { phone?: string | null };
+  stats?: { posts?: number; followers?: number; following?: number; likes?: number };
+};
+
+export async function getMe(token: string): Promise<User & Record<string, unknown>> {
+  const res = await apiFetch<MeResponse>("/api/me", { token });
+
+  // Ratakan profile + stats supaya komponen bisa memakai nama field yang sama.
+  return {
+    ...res.profile,
+    postsCount: res.stats?.posts,
+    followersCount: res.stats?.followers,
+    followingCount: res.stats?.following,
+    likesCount: res.stats?.likes,
+  };
 }
