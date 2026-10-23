@@ -39,14 +39,25 @@ export function register(input: RegisterInput) {
   });
 }
 
+/** Mencari token di beberapa nama field yang umum dipakai backend. */
+function pickToken(res: Record<string, unknown>): string | null {
+  const nested = res.data && typeof res.data === "object" ? (res.data as Record<string, unknown>) : {};
+  const candidates = [res.token, res.accessToken, res.access_token, nested.token, nested.accessToken];
+  const found = candidates.find((value) => typeof value === "string" && value.length > 0);
+  return typeof found === "string" ? found : null;
+}
+
 export async function login(input: LoginInput): Promise<string> {
   const res = await apiFetch<LoginResponse>("/api/auth/login", {
     method: "POST",
     body: input,
   });
-  const token = res.token ?? res.accessToken;
+  const body = (res ?? {}) as Record<string, unknown>;
+  const token = pickToken(body);
   if (!token) {
-    throw new Error("Token tidak ditemukan pada respons login.");
+    // Tampilkan nama field yang dikirim backend supaya mudah dicocokkan.
+    const keys = Object.keys(body).join(", ") || "(kosong)";
+    throw new Error(`Token tidak ditemukan. Field respons login: ${keys}`);
   }
   return token;
 }

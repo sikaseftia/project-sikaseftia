@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import AuthGuard from "@/components/AuthGuard";
@@ -54,6 +55,20 @@ function MeContent() {
           <p className="text-sm text-neutral-400">@{data.username}</p>
           {data.bio && <p className="mt-2 text-sm">{data.bio}</p>}
         </div>
+      )}
+
+      {data && (
+        <nav className="flex gap-3 text-sm">
+          <Link href="/me/edit" className="flex-1 rounded-full border border-neutral-700 py-2 text-center">
+            Edit profil
+          </Link>
+          <Link
+            href={`/users/${data.username}`}
+            className="flex-1 rounded-full border border-neutral-700 py-2 text-center"
+          >
+            Lihat profil publik
+          </Link>
+        </nav>
       )}
 
       <button
