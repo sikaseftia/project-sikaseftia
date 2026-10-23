@@ -3,8 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ApiError, apiFetch } from "@/lib/api";
+import { getMe } from "@/features/auth/api";
+import { followUser, unfollowUser } from "@/features/follow/api";
 import { getUser, toList } from "@/features/users/api";
 import { useAppSelector } from "@/store/hooks";
 
@@ -22,6 +24,7 @@ export default function PublicProfilePage() {
   const params = useParams<{ username: string }>();
   const username = decodeURIComponent(params.username);
   const token = useAppSelector((state) => state.auth.token);
+  const queryClient = useQueryClient();
   const [tab, setTab] = useState<Tab>("posts");
 
   const profile = useQuery({
@@ -35,6 +38,24 @@ export default function PublicProfilePage() {
       apiFetch<unknown>(`/api/users/${encodeURIComponent(username)}/${tab}`, { token }).then(
         (res) => toList<PostThumb>(res),
       ),
+  });
+
+  // Data akun sendiri, untuk menyembunyikan tombol Follow di profil sendiri.
+  const me = useQuery({
+    queryKey: ["me"],
+    queryFn: () => getMe(token as string),
+    enabled: Boolean(token),
+  });
+
+  const follow = useMutation({
+    mutationFn: (isFollowing: boolean) =>
+      isFollowing ? unfollowUser(username, token as string) : followUser(username, token as string),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["user", username] });
+      queryClient.invalidateQueries({ queryKey: ["me"] });
+      queryClient.invalidateQueries({ queryKey: ["followers", username] });
+      queryClient.invalidateQueries({ queryKey: ["following"] });
+    },
   });
 
   if (profile.isPending) {
@@ -53,6 +74,8 @@ export default function PublicProfilePage() {
   }
 
   const user = profile.data;
+  // Pakai isMe dari backend bila ada; cadangannya membandingkan username dengan akun login.
+  const isOwnProfile = user.isMe ?? Boolean(me.data && me.data.username === user.username);
 
   return (
     <section className="flex flex-col gap-6 p-6">
@@ -72,6 +95,24 @@ export default function PublicProfilePage() {
       </div>
 
       {user.bio && <p className="text-sm">{user.bio}</p>}
+
+      {token && !isOwnProfile && (
+        <button
+          type="button"
+          onClick={() => follow.mutate(Boolean(user.isFollowing))}
+          disabled={follow.isPending}
+          className={`h-10 rounded-full text-sm disabled:opacity-60 ${
+            user.isFollowing ? "border border-neutral-700" : "bg-violet-600"
+          }`}
+        >
+          {follow.isPending ? "Memproses…" : user.isFollowing ? "Following" : "Follow"}
+        </button>
+      )}
+      {follow.error && (
+        <p role="alert" className="rounded-lg bg-red-950 px-3 py-2 text-sm text-red-300">
+          {follow.error.message}
+        </p>
+      )}
 
       <div className="flex justify-around border-y border-neutral-900 py-3 text-center text-sm">
         <div>

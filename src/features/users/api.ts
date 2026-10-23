@@ -14,6 +14,8 @@ export type UserProfile = UserSummary & {
   followersCount?: number;
   followingCount?: number;
   isFollowing?: boolean;
+  followedByMe?: boolean;
+  isMe?: boolean;
 };
 
 export type ProfileUpdateInput = {
@@ -39,8 +41,28 @@ export function toList<T>(res: unknown): T[] {
   return [];
 }
 
-export function getUser(username: string, token?: string | null) {
-  return apiFetch<UserProfile>(`/api/users/${encodeURIComponent(username)}`, { token });
+/**
+ * Profil publik. Bentuknya belum terverifikasi: bisa datar, atau dibungkus { profile, stats }
+ * seperti /api/me. Fungsi ini meratakannya ke satu bentuk yang sama.
+ */
+export async function getUser(username: string, token?: string | null): Promise<UserProfile> {
+  // Bentuk nyata (dari Network tab): { id, name, username, ..., counts: { post, followers, following, likes }, isFollowing, isMe }
+  type Counts = { post?: number; posts?: number; followers?: number; following?: number; likes?: number };
+  const res = await apiFetch<
+    Partial<UserProfile> & { profile?: Partial<UserProfile>; stats?: Counts; counts?: Counts }
+  >(`/api/users/${encodeURIComponent(username)}`, { token });
+
+  const p = (res.profile ?? res) as UserProfile;
+  const counts = res.counts ?? res.stats;
+
+  return {
+    ...p,
+    postsCount: counts?.post ?? counts?.posts ?? p.postsCount,
+    followersCount: counts?.followers ?? p.followersCount,
+    followingCount: counts?.following ?? p.followingCount,
+    isFollowing: Boolean(res.isFollowing ?? res.followedByMe ?? p.isFollowing ?? p.followedByMe),
+    isMe: res.isMe ?? p.isMe,
+  };
 }
 
 export function updateMe(token: string, input: ProfileUpdateInput) {

@@ -81,6 +81,12 @@ function MeContent() {
           >
             Liked
           </Link>
+          <Link
+            href="/me/saved"
+            className="flex-1 rounded-full border border-neutral-700 py-2 text-center"
+          >
+            Saved
+          </Link>
         </nav>
       )}
 
