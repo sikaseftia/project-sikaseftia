@@ -24,14 +24,16 @@ export async function apiFetch<T>(
   path: string,
   { token, body, headers, ...init }: RequestOptions = {},
 ): Promise<T> {
+  // FormData (upload file) dikirim apa adanya; browser otomatis memberi Content-Type multipart.
+  const isForm = body instanceof FormData;
   const res = await fetch(`${BASE_URL}${path}`, {
     ...init,
     headers: {
-      ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+      ...(body !== undefined && !isForm ? { "Content-Type": "application/json" } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...headers,
     },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: isForm ? body : body !== undefined ? JSON.stringify(body) : undefined,
   });
 
   const data = await res.json().catch(() => null);
