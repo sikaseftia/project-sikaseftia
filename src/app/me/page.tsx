@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import AuthGuard from "@/components/AuthGuard";
 import { getMe } from "@/features/auth/api";
+import { getMyPosts, getPostImage } from "@/features/posts/api";
 import { ApiError } from "@/lib/api";
 import { clearSession, writeStoredToken } from "@/store/authSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -19,6 +20,12 @@ function MeContent() {
   const { data, error } = useQuery({
     queryKey: ["me"],
     queryFn: () => getMe(token as string),
+    enabled: Boolean(token),
+  });
+
+  const myPosts = useQuery({
+    queryKey: ["my-posts"],
+    queryFn: () => getMyPosts(token as string),
     enabled: Boolean(token),
   });
 
@@ -68,7 +75,58 @@ function MeContent() {
           >
             Lihat profil publik
           </Link>
+          <Link
+            href="/me/likes"
+            className="flex-1 rounded-full border border-neutral-700 py-2 text-center"
+          >
+            Liked
+          </Link>
         </nav>
+      )}
+
+      {data && (
+        <div className="flex justify-around border-y border-neutral-900 py-3 text-center text-sm">
+          <div>
+            <p className="font-semibold">{myPosts.data?.length ?? "–"}</p>
+            <p className="text-neutral-400">Posts</p>
+          </div>
+          <Link href={`/users/${data.username}/followers`}>
+            <p className="font-semibold">{(data as Record<string, unknown>).followersCount as number ?? "–"}</p>
+            <p className="text-neutral-400">Followers</p>
+          </Link>
+          <Link href={`/users/${data.username}/following`}>
+            <p className="font-semibold">{(data as Record<string, unknown>).followingCount as number ?? "–"}</p>
+            <p className="text-neutral-400">Following</p>
+          </Link>
+        </div>
+      )}
+
+      {myPosts.error && (
+        <p role="alert" className="rounded-lg bg-red-950 px-3 py-2 text-sm text-red-300">
+          Post gagal dimuat: {myPosts.error.message}
+        </p>
+      )}
+      {myPosts.data && myPosts.data.length === 0 && (
+        <p className="text-sm text-neutral-400">Kamu belum punya post. Tekan + untuk membuat post pertama.</p>
+      )}
+      {myPosts.data && myPosts.data.length > 0 && (
+        <div className="grid grid-cols-3 gap-1">
+          {myPosts.data.map((post) => {
+            const src = getPostImage(post);
+            return (
+              <Link
+                key={String(post.id)}
+                href={`/posts/${post.id}`}
+                className="aspect-square overflow-hidden bg-neutral-900"
+              >
+                {src && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={src} alt={post.caption ?? "Post"} className="h-full w-full object-cover" />
+                )}
+              </Link>
+            );
+          })}
+        </div>
       )}
 
       <button

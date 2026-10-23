@@ -32,6 +32,8 @@ export default function PostDetailPage() {
     mutationFn: () => deletePost(id, token as string),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["me"] });
+      queryClient.invalidateQueries({ queryKey: ["my-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
       queryClient.removeQueries({ queryKey: ["post", id] });
       router.replace("/me");
     },

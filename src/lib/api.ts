@@ -44,5 +44,10 @@ export async function apiFetch<T>(
     throw new ApiError(res.status, message);
   }
 
+  // Backend membungkus respons sukses dengan { success, message, data }. Ambil isi data-nya.
+  if (data && typeof data === "object" && "success" in data && "data" in data) {
+    return (data as { data: T }).data;
+  }
+
   return data as T;
 }

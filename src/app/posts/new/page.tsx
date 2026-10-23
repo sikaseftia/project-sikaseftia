@@ -49,6 +49,8 @@ function CreatePostContent() {
       createPost(token, { image: values.image as File, caption: values.caption }),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["me"] });
+      queryClient.invalidateQueries({ queryKey: ["my-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
       const created = res as { id?: number | string; post?: { id?: number | string } };
       const id = created.id ?? created.post?.id;
       router.replace(id !== undefined ? `/posts/${id}` : "/me");

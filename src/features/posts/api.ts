@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/api";
+import { toList } from "@/features/users/api";
 
 export type PostAuthor = {
   id?: number | string;
@@ -7,6 +8,7 @@ export type PostAuthor = {
   avatarUrl?: string | null;
 };
 
+/** Bentuk post sesuai respons backend (sudah diverifikasi dari Network tab). */
 export type Post = {
   id: number | string;
   imageUrl?: string;
@@ -16,19 +18,34 @@ export type Post = {
   author?: PostAuthor;
   user?: PostAuthor;
   likesCount?: number;
+  likeCount?: number;
   commentsCount?: number;
+  commentCount?: number;
+  isLiked?: boolean;
+  likedByMe?: boolean;
 };
 
-/**
- * CATATAN: Bentuk respons post belum terverifikasi dari Swagger.
- * Helper di bawah mencoba beberapa lokasi umum untuk id, gambar, dan penulis.
- */
+/** Menyamakan nama field backend (likeCount, likedByMe) dengan nama yang dipakai di UI. */
+export function normalizePost(raw: Post): Post & { likesCount: number; isLiked: boolean } {
+  return {
+    ...raw,
+    likesCount: raw.likesCount ?? raw.likeCount ?? 0,
+    isLiked: Boolean(raw.isLiked ?? raw.likedByMe),
+  };
+}
+
 export function getPostImage(post: Post): string | undefined {
   return post.imageUrl ?? post.image;
 }
 
 export function getPostAuthor(post: Post): PostAuthor | undefined {
   return post.author ?? post.user;
+}
+/** Post milik pengguna yang sedang login. */
+export function getMyPosts(token: string) {
+  return apiFetch<unknown>("/api/me/posts", { token }).then((res) =>
+    toList<Post>(res).map(normalizePost),
+  );
 }
 
 export function createPost(token: string, input: { image: File; caption: string }) {
@@ -39,7 +56,7 @@ export function createPost(token: string, input: { image: File; caption: string 
 }
 
 export function getPost(id: string, token?: string | null) {
-  return apiFetch<Post>(`/api/posts/${encodeURIComponent(id)}`, { token });
+  return apiFetch<Post>(`/api/posts/${encodeURIComponent(id)}`, { token }).then(normalizePost);
 }
 
 export function deletePost(id: string, token: string) {

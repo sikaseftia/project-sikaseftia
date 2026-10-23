@@ -32,7 +32,7 @@ export function toList<T>(res: unknown): T[] {
   if (Array.isArray(res)) return res as T[];
   if (res && typeof res === "object") {
     const record = res as Record<string, unknown>;
-    for (const key of ["data", "items", "users", "results"]) {
+    for (const key of ["data", "items", "users", "results", "posts", "feed"]) {
       if (Array.isArray(record[key])) return record[key] as T[];
     }
   }
