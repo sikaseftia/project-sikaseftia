@@ -11,13 +11,15 @@ import FormField from "@/components/FormField";
 import { getMe } from "@/features/auth/api";
 import { updateMe } from "@/features/users/api";
 import { editProfileSchema, type EditProfileValues } from "@/schemas/profile";
-import { useAppSelector } from "@/store/hooks";
+import { clearSession, writeStoredToken } from "@/store/authSlice";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
 
 function EditProfileContent() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const fileInput = useRef<HTMLInputElement>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -86,12 +88,19 @@ function EditProfileContent() {
       }),
     // Teks profil bisa tersimpan walaupun upload foto gagal, jadi cache dibersihkan di kedua kondisi.
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["me"] });
+      queryClient.invalidateQueries();
     },
     onSuccess: () => {
       router.replace("/me");
     },
   });
+
+  function handleLogout() {
+    writeStoredToken(null);
+    dispatch(clearSession());
+    queryClient.clear();
+    router.replace("/login");
+  }
 
   const serverAvatar = me?.avatarUrl as string | null | undefined;
   const avatarUrl = previewUrl ?? serverAvatar;
@@ -103,7 +112,7 @@ function EditProfileContent() {
         <Link href="/me" aria-label="Kembali" className="text-lg text-neutral-300">
           ←
         </Link>
-        <h1 className="text-base font-semibold">Edit Profile</h1>
+        <h1 className="text-base font-semibold">Edit Profil</h1>
         <span className="w-4" />
       </div>
 
@@ -113,8 +122,10 @@ function EditProfileContent() {
         </p>
       )}
 
+      {/* Figma: foto profil di kiri, field form di kanan. */}
+      <div className="flex items-start gap-4">
       {/* Foto profil: pratinjau langsung, diunggah saat Save Changes. */}
-      <div className="flex flex-col items-center gap-3">
+      <div className="flex w-24 shrink-0 flex-col items-center gap-3">
         <span className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-neutral-800 text-2xl font-semibold">
           {avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -134,12 +145,12 @@ function EditProfileContent() {
         <button
           type="button"
           onClick={() => fileInput.current?.click()}
-          className="rounded-lg border border-neutral-700 px-3 py-1.5 text-xs text-neutral-200"
+          className="rounded-xl border border-neutral-700 px-3 py-1.5 text-xs text-neutral-200"
         >
-          Change Photo
+          Ganti Foto
         </button>
         {avatarFile && (
-          <p className="text-xs text-neutral-500">Foto baru akan disimpan saat kamu menekan Save Changes.</p>
+          <p className="text-xs text-neutral-500">Foto baru akan disimpan saat kamu menekan Simpan Perubahan.</p>
         )}
         {fileError && (
           <p role="alert" className="text-xs text-red-400">
@@ -149,11 +160,11 @@ function EditProfileContent() {
       </div>
 
       <form
-        className="flex flex-col gap-4"
+        className="flex min-w-0 flex-1 flex-col gap-4"
         onSubmit={handleSubmit((values) => mutation.mutate(values))}
         noValidate
       >
-        <FormField label="Name" error={errors.name?.message} {...register("name")} />
+        <FormField label="Nama" error={errors.name?.message} {...register("name")} />
         <FormField
           label="Username"
           autoComplete="username"
@@ -171,11 +182,24 @@ function EditProfileContent() {
         <button
           type="submit"
           disabled={mutation.isPending || !me}
-          className="h-11 rounded-lg bg-brand text-sm font-medium disabled:opacity-60"
+          className="h-11 rounded-xl bg-brand text-sm font-medium disabled:opacity-60"
         >
-          {mutation.isPending ? "Menyimpan…" : "Save Changes"}
+          {mutation.isPending ? "Menyimpan…" : "Simpan Perubahan"}
         </button>
       </form>
+      </div>
+
+      {/* Pengaturan akun: keluar dari akun (pindah dari tab Pengaturan di /me). */}
+      <div className="flex flex-col gap-3 border-t border-neutral-900 pt-5">
+        <h2 className="text-sm font-semibold">Pengaturan akun</h2>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="h-11 rounded-xl border border-red-900 text-sm text-red-400"
+        >
+          Keluar
+        </button>
+      </div>
     </section>
   );
 }

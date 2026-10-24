@@ -50,11 +50,20 @@ export function getPostImage(post: Post): string | undefined {
 export function getPostAuthor(post: Post): PostAuthor | undefined {
   return post.author ?? post.user;
 }
-/** Post milik pengguna yang sedang login. */
-export function getMyPosts(token: string) {
-  return apiFetch<unknown>("/api/me/posts", { token }).then((res) =>
-    toList<Post>(res).map(normalizePost),
-  );
+/** Post milik pengguna yang sedang login (satu halaman). */
+export function getMyPostsPage(token: string, page: number, limit: number) {
+  return apiFetch<unknown>(`/api/me/posts?page=${page}&limit=${limit}`, { token }).then((res) => ({
+    items: toList<Post>(res).map(normalizePost),
+    raw: res,
+  }));
+}
+
+/** Post publik milik user tertentu (satu halaman). */
+export function getUserPostsPage(username: string, page: number, limit: number, token?: string | null) {
+  return apiFetch<unknown>(
+    `/api/users/${encodeURIComponent(username)}/posts?page=${page}&limit=${limit}`,
+    { token },
+  ).then((res) => ({ items: toList<Post>(res).map(normalizePost), raw: res }));
 }
 
 export function createPost(token: string, input: { image: File; caption: string }) {

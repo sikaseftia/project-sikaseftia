@@ -1,19 +1,27 @@
 "use client";
 
+import { ErrorMessage, EmptyMessage, LoadingMessage } from "@/components/StateMessages";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import LoadMoreButton from "@/components/LoadMoreButton";
+import { PAGE_SIZE, pageResult } from "@/lib/paging";
 import AuthGuard from "@/components/AuthGuard";
 import UserList from "@/components/UserList";
-import { getMyFollowers } from "@/features/follow/api";
+import { getMyFollowersPage } from "@/features/follow/api";
 import { useAppSelector } from "@/store/hooks";
 
 function MyFollowersContent() {
   const token = useAppSelector((state) => state.auth.token) as string;
 
-  const { data, error, isPending } = useQuery({
-    queryKey: ["my-followers"],
-    queryFn: () => getMyFollowers(token),
-  });
+  const { error, isPending, refetch, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage, data: pages } =
+    useInfiniteQuery({
+      queryKey: ["my-followers"],
+      queryFn: ({ pageParam }) =>
+        getMyFollowersPage(token, pageParam, PAGE_SIZE).then((r) => pageResult(pageParam, r, PAGE_SIZE)),
+      initialPageParam: 1,
+      getNextPageParam: (last) => (last.hasNext ? last.page + 1 : undefined),
+    });
+  const data = pages?.pages.flatMap((p) => p.items);
 
   return (
     <section className="flex flex-col gap-4 p-6">
@@ -21,17 +29,18 @@ function MyFollowersContent() {
         <Link href="/me" className="text-sm text-neutral-400">
           ← Profil
         </Link>
-        <h1 className="text-base font-semibold">Followers</h1>
+        <h1 className="text-base font-semibold">Pengikut</h1>
         <span className="w-12" />
       </div>
 
-      {isPending && <p className="text-sm text-neutral-400">Memuat…</p>}
-      {error && (
-        <p role="alert" className="rounded-lg bg-red-950 px-3 py-2 text-sm text-red-300">
-          {error.message}
-        </p>
+      {isPending && <LoadingMessage />}
+      {error && <ErrorMessage message={error.message} onRetry={() => refetch()} retrying={isFetching} />}
+      {data && (
+        <>
+          <UserList users={data} emptyText="Belum ada followers." />
+          <LoadMoreButton hasNext={Boolean(hasNextPage)} loading={isFetchingNextPage} onClick={() => fetchNextPage()} />
+        </>
       )}
-      {data && <UserList users={data} emptyText="Belum ada followers." />}
     </section>
   );
 }

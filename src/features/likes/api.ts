@@ -1,5 +1,5 @@
 import { apiFetch } from "@/lib/api";
-import { toList, type UserSummary } from "@/features/users/api";
+import { toList, toUserSummaries, type UserSummary } from "@/features/users/api";
 import { normalizePost, type Post } from "@/features/posts/api";
 
 /** Post yang sudah dinormalisasi: punya likesCount dan isLiked. */
@@ -32,12 +32,20 @@ export function unlikePost(postId: string, token: string) {
 
 export function getPostLikers(postId: string, token?: string | null) {
   return apiFetch<unknown>(`/api/posts/${encodeURIComponent(postId)}/likes`, { token }).then(
-    (res) => toList<UserSummary>(res),
+    (res) => toUserSummaries(res),
   );
 }
 
-export function getMyLikes(token: string) {
-  return apiFetch<unknown>("/api/me/likes", { token }).then((res) =>
-    toList<Post>(res).map(normalizePost),
-  );
+export function getMyLikesPage(token: string, page: number, limit: number) {
+  return apiFetch<unknown>(`/api/me/likes?page=${page}&limit=${limit}`, { token }).then((res) => ({
+    items: toList<Post>(res).map(normalizePost),
+    raw: res,
+  }));
+}
+
+export function getUserLikesPage(username: string, page: number, limit: number, token?: string | null) {
+  return apiFetch<unknown>(
+    `/api/users/${encodeURIComponent(username)}/likes?page=${page}&limit=${limit}`,
+    { token },
+  ).then((res) => ({ items: toList<Post>(res).map(normalizePost), raw: res }));
 }

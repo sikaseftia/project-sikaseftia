@@ -49,7 +49,7 @@ export default function LoginPage() {
           <Image src="/logo.png" alt="" width={24} height={24} />
           Sociality
         </div>
-        <h1 className="mt-5 text-center text-base font-semibold">Welcome Back!</h1>
+        <h1 className="mt-5 text-center text-base font-semibold">Selamat Datang Kembali!</h1>
 
         <form
           className="mt-5 flex flex-col gap-3"
@@ -60,16 +60,16 @@ export default function LoginPage() {
             label="Email"
             type="email"
             autoComplete="email"
-            placeholder="Enter your email"
+            placeholder="Masukkan email kamu"
             compact
             error={errors.email?.message}
             {...register("email")}
           />
           <FormField
-            label="Password"
+            label="Kata Sandi"
             type="password"
             autoComplete="current-password"
-            placeholder="Enter your password"
+            placeholder="Masukkan kata sandi kamu"
             compact
             error={errors.password?.message}
             {...register("password")}
@@ -84,7 +84,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={mutation.isPending}
-            className="mt-1 h-9 rounded-lg bg-brand text-sm font-medium disabled:opacity-60"
+            className="mt-1 h-9 rounded-xl bg-brand text-sm font-medium disabled:opacity-60"
           >
             {mutation.isPending ? "Memproses…" : "Login"}
           </button>
@@ -93,7 +93,7 @@ export default function LoginPage() {
         <p className="mt-4 text-center text-xs text-neutral-400">
           Don&apos;t have an account?{" "}
           <Link href="/register" className="font-medium text-brand-soft">
-            Register
+            Daftar
           </Link>
         </p>
       </div>

@@ -20,8 +20,9 @@ export function unsavePost(postId: string, token: string) {
   });
 }
 
-export function getSavedPosts(token: string) {
-  return apiFetch<unknown>("/api/me/saved", { token }).then((res) =>
-    toList<Post>(res).map(normalizePost),
-  );
+export function getSavedPostsPage(token: string, page: number, limit: number) {
+  return apiFetch<unknown>(`/api/me/saved?page=${page}&limit=${limit}`, { token }).then((res) => ({
+    items: toList<Post>(res).map(normalizePost),
+    raw: res,
+  }));
 }

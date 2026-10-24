@@ -88,32 +88,51 @@ export function updateMe(token: string, input: ProfileUpdateInput & { avatar?: F
 
 export function searchUsers(q: string, token?: string | null) {
   return apiFetch<unknown>(`/api/users/search?q=${encodeURIComponent(q)}`, { token }).then(
-    (res) => toList<UserSummary>(res),
+    (res) => toUserSummaries(res),
   );
 }
 
-export function getFollowers(username: string, token?: string | null) {
-  return apiFetch<unknown>(`/api/users/${encodeURIComponent(username)}/followers`, { token }).then(
-    (res) => toList<UserSummary>(res),
-  );
+export function getFollowersPage(username: string, page: number, limit: number, token?: string | null) {
+  return apiFetch<unknown>(
+    `/api/users/${encodeURIComponent(username)}/followers?page=${page}&limit=${limit}`,
+    { token },
+  ).then((res) => ({ items: toUserSummaries(res), raw: res }));
 }
 
-export function getFollowing(username: string, token?: string | null) {
-  return apiFetch<unknown>(`/api/users/${encodeURIComponent(username)}/following`, { token }).then(
-    (res) => toList<UserSummary>(res),
-  );
+export function getFollowingPage(username: string, page: number, limit: number, token?: string | null) {
+  return apiFetch<unknown>(
+    `/api/users/${encodeURIComponent(username)}/following?page=${page}&limit=${limit}`,
+    { token },
+  ).then((res) => ({ items: toUserSummaries(res), raw: res }));
 }
 
-/**
- * Upload foto profil.
- * CATATAN: endpoint dan nama field ("/api/me/avatar", "avatar") BELUM TERVERIFIKASI di Swagger.
- * Sesuaikan dua nilai ini dengan dokumentasi backend; bagian lain tidak perlu diubah.
- */
-export const AVATAR_ENDPOINT = "/api/me/avatar";
-export const AVATAR_FIELD = "avatar";
+/** Array pertama yang ditemukan di dalam respons, apa pun nama kuncinya (data, following, dll.). */
+function findArray(res: unknown): unknown[] {
+  if (Array.isArray(res)) return res;
+  if (res && typeof res === "object") {
+    for (const value of Object.values(res as Record<string, unknown>)) {
+      if (Array.isArray(value)) return value;
+    }
+  }
+  return [];
+}
 
-export function uploadAvatar(token: string, file: File) {
-  const form = new FormData();
-  form.append(AVATAR_FIELD, file);
-  return apiFetch<unknown>(AVATAR_ENDPOINT, { method: "POST", token, body: form });
+/** Ambil objek user dari satu item. Mendukung item datar maupun item yang membungkus user di dalam field lain. */
+function pickUser(item: unknown): UserSummary | null {
+  if (!item || typeof item !== "object") return null;
+  const record = item as Record<string, unknown>;
+  if (typeof record.username === "string") return record as unknown as UserSummary;
+  for (const value of Object.values(record)) {
+    if (value && typeof value === "object" && typeof (value as Record<string, unknown>).username === "string") {
+      return value as UserSummary;
+    }
+  }
+  return null;
+}
+
+/** Daftar user dari respons follow / followers / following / search, dengan bentuk apa pun. */
+export function toUserSummaries(res: unknown): UserSummary[] {
+  return findArray(res)
+    .map(pickUser)
+    .filter((user): user is UserSummary => user !== null);
 }

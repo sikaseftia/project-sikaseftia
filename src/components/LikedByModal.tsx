@@ -1,5 +1,6 @@
 "use client";
 
+import { ErrorMessage, EmptyMessage, LoadingMessage } from "@/components/StateMessages";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import UserList from "@/components/UserList";
@@ -13,7 +14,7 @@ type Props = {
 
 /** Daftar pengguna yang menyukai sebuah post. Terbuka sebagai dialog. */
 export default function LikedByModal({ postId, token, onClose }: Props) {
-  const { data, error, isPending } = useQuery({
+  const { data, error, isPending, refetch, isFetching } = useQuery({
     queryKey: ["post-likers", postId],
     queryFn: () => getPostLikers(postId, token),
   });
@@ -35,13 +36,13 @@ export default function LikedByModal({ postId, token, onClose }: Props) {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Likes"
+        aria-label="Suka"
         onClick={(e) => e.stopPropagation()}
         className="flex max-h-[70vh] w-full max-w-[393px] flex-col rounded-t-2xl border border-neutral-800 bg-neutral-950 px-4 pb-5 pt-4 sm:rounded-2xl"
       >
         {/* Figma: judul "Likes" di kiri dan tombol X di kanan. */}
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-base font-semibold">Likes</h2>
+          <h2 className="text-base font-semibold">Suka</h2>
           <button
             type="button"
             onClick={onClose}
@@ -55,12 +56,8 @@ export default function LikedByModal({ postId, token, onClose }: Props) {
         </div>
 
         <div className="overflow-y-auto">
-          {isPending && <p className="text-sm text-neutral-400">Memuat…</p>}
-          {error && (
-            <p role="alert" className="rounded-lg bg-red-950 px-3 py-2 text-sm text-red-300">
-              {error.message}
-            </p>
-          )}
+          {isPending && <LoadingMessage />}
+          {error && <ErrorMessage message={error.message} onRetry={() => refetch()} retrying={isFetching} />}
           {data && <UserList users={data} token={token} emptyText="Belum ada yang menyukai post ini." />}
         </div>
       </div>

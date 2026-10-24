@@ -1,5 +1,5 @@
 import { apiFetch } from "@/lib/api";
-import { toList, type UserSummary } from "@/features/users/api";
+import { toUserSummaries, type UserSummary } from "@/features/users/api";
 
 /**
  * CATATAN: Endpoint dari daftar Swagger: /api/follow/{username}.
@@ -20,14 +20,16 @@ export function unfollowUser(username: string, token: string) {
 }
 
 /** Daftar followers dan following milik sendiri (/me/followers, /me/following). */
-export function getMyFollowers(token: string) {
-  return apiFetch<unknown>("/api/me/followers", { token }).then((res) =>
-    toList<UserSummary>(res),
-  );
+export function getMyFollowersPage(token: string, page: number, limit: number) {
+  return apiFetch<unknown>(`/api/me/followers?page=${page}&limit=${limit}`, { token }).then((res) => ({
+    items: toUserSummaries(res),
+    raw: res,
+  }));
 }
 
-export function getMyFollowing(token: string) {
-  return apiFetch<unknown>("/api/me/following", { token }).then((res) =>
-    toList<UserSummary>(res),
-  );
+export function getMyFollowingPage(token: string, page: number, limit: number) {
+  return apiFetch<unknown>(`/api/me/following?page=${page}&limit=${limit}`, { token }).then((res) => ({
+    items: toUserSummaries(res),
+    raw: res,
+  }));
 }

@@ -25,10 +25,11 @@ export function getCommentAuthor(comment: Comment): PostAuthor | undefined {
   return comment.author ?? comment.user;
 }
 
-export function getComments(postId: string, token?: string | null) {
-  return apiFetch<unknown>(`/api/posts/${encodeURIComponent(postId)}/comments`, { token }).then(
-    (res) => toList<Comment>(res),
-  );
+export function getCommentsPage(postId: string, page: number, limit: number, token?: string | null) {
+  return apiFetch<unknown>(
+    `/api/posts/${encodeURIComponent(postId)}/comments?page=${page}&limit=${limit}`,
+    { token },
+  ).then((res) => ({ items: toList<Comment>(res), raw: res }));
 }
 
 export function addComment(postId: string, text: string, token: string) {

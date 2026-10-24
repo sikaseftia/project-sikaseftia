@@ -60,7 +60,7 @@ export default function RegisterPage() {
           <Image src="/logo.png" alt="" width={24} height={24} />
           Sociality
         </div>
-        <h2 className="mt-5 text-center text-base font-semibold">Register</h2>
+        <h2 className="mt-5 text-center text-base font-semibold">Daftar</h2>
 
         <form
           className="mt-5 flex flex-col gap-3"
@@ -68,15 +68,15 @@ export default function RegisterPage() {
           noValidate
         >
           <FormField
-            label="Name"
-            placeholder="Enter your name"
+            label="Nama"
+            placeholder="Masukkan nama kamu"
             error={errors.name?.message}
             {...register("name")}
             compact
           />
           <FormField
             label="Username"
-            placeholder="Enter your username"
+            placeholder="Masukkan username kamu"
             autoComplete="username"
             error={errors.username?.message}
             {...register("username")}
@@ -85,34 +85,34 @@ export default function RegisterPage() {
           <FormField
             label="Email"
             type="email"
-            placeholder="Enter your email"
+            placeholder="Masukkan email kamu"
             autoComplete="email"
             error={errors.email?.message}
             {...register("email")}
             compact
           />
           <FormField
-            label="Number Phone"
+            label="Nomor Telepon"
             type="tel"
-            placeholder="Enter your number phone"
+            placeholder="Masukkan nomor telepon kamu"
             autoComplete="tel"
             error={errors.phone?.message}
             {...register("phone")}
             compact
           />
           <FormField
-            label="Password"
+            label="Kata Sandi"
             type="password"
-            placeholder="Enter your password"
+            placeholder="Masukkan kata sandi kamu"
             autoComplete="new-password"
             error={errors.password?.message}
             {...register("password")}
             compact
           />
           <FormField
-            label="Confirm Password"
+            label="Konfirmasi Kata Sandi"
             type="password"
-            placeholder="Enter your confirm password"
+            placeholder="Masukkan ulang kata sandi kamu"
             autoComplete="new-password"
             error={errors.confirmPassword?.message}
             {...register("confirmPassword")}
@@ -128,7 +128,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={mutation.isPending}
-            className="mt-1 h-9 rounded-lg bg-brand text-sm font-medium disabled:opacity-60"
+            className="mt-1 h-9 rounded-xl bg-brand text-sm font-medium disabled:opacity-60"
           >
             {mutation.isPending ? "Memproses…" : "Submit"}
           </button>

@@ -51,14 +51,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
           {isLoggedIn ? (
             <>
-              {/* Tengah: satu-satunya kolom pencarian. Enter membuka /search?q=... */}
+              {/* Tengah: satu-satunya kolom pencarian. Enter membuka /users/search?q=... */}
               <form
                 role="search"
                 className="min-w-0 flex-1 md:mx-auto md:w-80 md:flex-none"
                 onSubmit={(e) => {
                   e.preventDefault();
                   const q = searchText.trim();
-                  router.push(q ? `/search?q=${encodeURIComponent(q)}` : "/search");
+                  router.push(q ? `/users/search?q=${encodeURIComponent(q)}` : "/users/search");
                 }}
               >
                 <label className="flex h-8 items-center gap-2 rounded-full border border-neutral-800 bg-surface px-3 text-xs text-neutral-500 focus-within:border-brand">
@@ -70,7 +70,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     type="search"
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
-                    placeholder="Search"
+                    placeholder="Cari"
                     aria-label="Cari pengguna"
                     className="min-w-0 flex-1 bg-transparent text-white outline-none placeholder:text-neutral-500"
                   />
@@ -93,10 +93,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           ) : (
             <div className="ml-auto flex gap-2 text-xs">
               <Link href="/login" className="rounded-full border border-neutral-700 px-3 py-1.5">
-                Login
+                Masuk
               </Link>
               <Link href="/register" className="rounded-full bg-brand px-3 py-1.5">
-                Register
+                Daftar
               </Link>
             </div>
           )}
@@ -108,18 +108,18 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {isLoggedIn && !isAuthPage && (
         <nav aria-label="Navigasi utama" className="pointer-events-none fixed inset-x-0 bottom-4 z-10 mx-auto w-full max-w-[393px] px-6">
           {/* Figma: bar melayang berbentuk pill, tombol + di tengah berwarna brand. */}
-          <div className="pointer-events-auto flex items-center justify-between rounded-full border border-neutral-800 bg-neutral-950/95 px-7 py-2 shadow-lg shadow-black/60 backdrop-blur">
-            <NavLink href="/feed" label="Home" active={pathname === "/feed"}>
+          <div className="pointer-events-auto mx-auto flex w-full max-w-[320px] items-center justify-between rounded-full border border-neutral-800 bg-neutral-950/95 px-7 py-2 shadow-lg shadow-black/60 backdrop-blur">
+            <NavLink href="/feed" label="Beranda" active={pathname === "/feed"}>
               <path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />
             </NavLink>
             <Link
-              href="/posts/new"
+              href="/create"
               className="flex h-11 w-11 items-center justify-center rounded-full bg-brand text-2xl leading-none text-white"
               aria-label="Buat post"
             >
               +
             </Link>
-            <NavLink href="/me" label="Profile" active={pathname.startsWith("/me")}>
+            <NavLink href="/me" label="Profil" active={pathname.startsWith("/me")}>
               <circle cx="12" cy="8" r="4" />
               <path d="M4 21a8 8 0 0 1 16 0" />
             </NavLink>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { followUser, unfollowUser } from "@/features/follow/api";
+import { useQuery } from "@tanstack/react-query";
+import { useToggleFollow } from "@/features/follow/useToggleFollow";
 import { getUser } from "@/features/users/api";
 
 type Props = {
@@ -10,27 +10,17 @@ type Props = {
 };
 
 /**
- * Tombol Follow / Following untuk satu akun.
- * Status diambil dari GET /api/users/{username} (field isFollowing), bentuk yang sama
- * dengan halaman profil, jadi tidak bergantung pada respons search atau daftar lain.
+ * Tombol Ikuti / Mengikuti untuk satu akun. Tampilan langsung berubah (Optimistic UI).
+ * Status diambil dari GET /api/users/{username} (field isFollowing).
  */
 export default function FollowButton({ username, token }: Props) {
-  const queryClient = useQueryClient();
-
   const profile = useQuery({
     queryKey: ["user", username, token ?? "guest"],
     queryFn: () => getUser(username, token),
     enabled: Boolean(token),
   });
 
-  const follow = useMutation({
-    mutationFn: (isFollowing: boolean) =>
-      isFollowing ? unfollowUser(username, token as string) : followUser(username, token as string),
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["user", username] });
-      queryClient.invalidateQueries({ queryKey: ["me"] });
-    },
-  });
+  const follow = useToggleFollow(username, token ?? "");
 
   if (!token || !profile.data || profile.data.isMe) return null;
 
@@ -42,11 +32,11 @@ export default function FollowButton({ username, token }: Props) {
         type="button"
         onClick={() => follow.mutate(isFollowing)}
         disabled={follow.isPending}
-        className={`h-8 rounded-lg px-4 text-xs font-medium disabled:opacity-60 ${
+        className={`h-8 rounded-xl px-4 text-xs font-medium disabled:opacity-60 ${
           isFollowing ? "border border-neutral-700" : "bg-brand"
         }`}
       >
-        {follow.isPending ? "…" : isFollowing ? "Following" : "Follow"}
+        {isFollowing ? "Mengikuti" : "Ikuti"}
       </button>
       {follow.error && (
         <span role="alert" className="mt-1 text-xs text-red-400">
