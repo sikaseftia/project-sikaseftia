@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import LikedByModal from "@/components/LikedByModal";
+import { Button } from "@/components/ui/button";
 import ShareSheet from "@/components/ShareSheet";
 import { isLikedByMe, type LikeablePost } from "@/features/likes/api";
 import { useToggleLike } from "@/features/likes/useToggleLike";
@@ -13,7 +14,7 @@ import { track } from "@/lib/analytics";
 
 function HeartIcon({ filled }: { filled: boolean }) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+    <svg className="size-[22px]" width="22" height="22" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
       <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z" />
     </svg>
   );
@@ -38,7 +39,7 @@ function CommentIcon() {
 
 function BookmarkIcon({ filled }: { filled: boolean }) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+    <svg className="size-[22px]" width="22" height="22" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
       <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
     </svg>
   );
@@ -126,16 +127,18 @@ export default function PostActions({ post, token, commentHref }: Props) {
   return (
     <>
       <div className="flex items-center gap-4 px-4">
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           aria-pressed={liked}
           aria-label={liked ? "Batal suka" : "Suka"}
           disabled={toggle.isPending}
           onClick={onLike}
-          className={`flex items-center gap-1.5 text-sm disabled:opacity-50 ${liked ? "text-red-500" : "text-neutral-100"}`}
+          className={`h-auto w-auto rounded-none p-0 hover:bg-transparent hover:text-current disabled:opacity-50 ${liked ? "text-red-500" : "text-neutral-100"}`}
         >
           <HeartIcon filled={liked} />
-        </button>
+        </Button>
         <button
           type="button"
           onClick={() => setShowLikers(true)}
@@ -161,16 +164,18 @@ export default function PostActions({ post, token, commentHref }: Props) {
         >
           <PaperPlaneIcon />
         </button>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           aria-pressed={saved}
           aria-label={saved ? "Hapus dari simpanan" : "Simpan"}
           disabled={toggleSave.isPending}
           onClick={onSave}
-          className={`ml-auto disabled:opacity-50 ${saved ? "text-brand-soft" : "text-neutral-100"}`}
+          className={`ml-auto h-auto w-auto rounded-none p-0 hover:bg-transparent hover:text-current disabled:opacity-50 ${saved ? "text-brand-soft" : "text-neutral-100"}`}
         >
           <BookmarkIcon filled={saved} />
-        </button>
+        </Button>
       </div>
 
       {(toggle.error || toggleSave.error) && (

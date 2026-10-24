@@ -6,6 +6,7 @@ import Link from "next/link";
 import dayjs from "dayjs";
 import { timeAgo } from "@/lib/time";
 import PostActions from "@/components/PostActions";
+import { Card } from "@/components/ui/card";
 import { getPostAuthor, getPostImage } from "@/features/posts/api";
 import type { LikeablePost } from "@/features/likes/api";
 
@@ -26,7 +27,10 @@ export default function PostCard({ post, token }: Props) {
   const longCaption = caption.length > 90;
 
   return (
-    <article className="flex flex-col gap-3 border-b border-neutral-900 pb-4">
+    <Card
+      role="article"
+      className="gap-3 rounded-none border-b border-neutral-900 bg-transparent py-0 pb-4 text-white ring-0"
+    >
       {/* Header: avatar, nama, dan waktu (Figma). */}
       {author && (
         <div className="flex items-center gap-2.5 px-4">
@@ -80,6 +84,6 @@ export default function PostCard({ post, token }: Props) {
       <Link href={`/posts/${postId}`} className="px-4 text-sm text-neutral-500">
         {commentsCount} komentar
       </Link>
-    </article>
+    </Card>
   );
 }

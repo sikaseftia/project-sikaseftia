@@ -9,6 +9,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { track } from "@/lib/analytics";
 import { getMe } from "@/features/auth/api";
 import { deletePost, getPost, getPostAuthor, getPostImage } from "@/features/posts/api";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import CommentSection from "@/components/CommentSection";
 import FollowButton from "@/components/FollowButton";
 import PostActions from "@/components/PostActions";
@@ -118,33 +128,42 @@ export default function PostDetail({ id, embedded = false }: Props) {
 
       {isOwner && (
         <div className="px-4">
-          {!confirming ? (
-            <button
-              type="button"
-              onClick={() => setConfirming(true)}
-              className="h-10 w-full rounded-full border border-red-900 text-sm text-red-400"
+          <Dialog open={confirming} onOpenChange={setConfirming}>
+            <DialogTrigger
+              render={
+                <Button
+                  variant="outline"
+                  className="h-10 w-full rounded-full border-red-900 bg-transparent text-sm text-red-400 hover:bg-red-950/40"
+                />
+              }
             >
               Hapus post
-            </button>
-          ) : (
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setConfirming(false)}
-                className="h-10 flex-1 rounded-full border border-neutral-700 text-sm"
-              >
-                Batal
-              </button>
-              <button
-                type="button"
-                onClick={() => remove.mutate()}
-                disabled={remove.isPending}
-                className="h-10 flex-1 rounded-full bg-red-700 text-sm disabled:opacity-60"
-              >
-                {remove.isPending ? "Menghapus…" : "Ya, hapus"}
-              </button>
-            </div>
-          )}
+            </DialogTrigger>
+            <DialogContent className="bg-neutral-950 text-white ring-neutral-800 sm:max-w-sm">
+              <DialogHeader>
+                <DialogTitle className="text-white">Hapus post ini?</DialogTitle>
+                <DialogDescription className="text-neutral-400">
+                  Post yang sudah dihapus tidak bisa dikembalikan.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="border-neutral-800 bg-neutral-900/50">
+                <Button
+                  variant="outline"
+                  onClick={() => setConfirming(false)}
+                  className="h-10 flex-1 rounded-full border-neutral-700 bg-transparent text-sm text-white hover:bg-neutral-900"
+                >
+                  Batal
+                </Button>
+                <Button
+                  onClick={() => remove.mutate()}
+                  disabled={remove.isPending}
+                  className="h-10 flex-1 rounded-full bg-red-700 text-sm text-white hover:bg-red-600"
+                >
+                  {remove.isPending ? "Menghapus…" : "Ya, hapus"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       )}
 

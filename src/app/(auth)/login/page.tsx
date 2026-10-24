@@ -13,6 +13,7 @@ import { loginSchema, type LoginValues } from "@/schemas/auth";
 import { useAppDispatch } from "@/store/hooks";
 import { setToken, writeStoredToken } from "@/store/authSlice";
 import FormField from "@/components/FormField";
+import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -81,13 +82,9 @@ export default function LoginPage() {
             </p>
           )}
 
-          <button
-            type="submit"
-            disabled={mutation.isPending}
-            className="mt-1 h-9 rounded-xl bg-brand text-sm font-medium disabled:opacity-60"
-          >
+          <Button type="submit" variant="brand" disabled={mutation.isPending} className="mt-1 h-9 rounded-xl text-sm font-medium">
             {mutation.isPending ? "Memproses…" : "Login"}
-          </button>
+          </Button>
         </form>
 
         <p className="mt-4 text-center text-xs text-neutral-400">

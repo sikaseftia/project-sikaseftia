@@ -1,5 +1,6 @@
 "use client";
 
+import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -66,13 +67,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     <circle cx="11" cy="11" r="7" />
                     <path d="m20 20-3.5-3.5" />
                   </svg>
-                  <input
+                  <Input
                     type="search"
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
                     placeholder="Cari"
                     aria-label="Cari pengguna"
-                    className="min-w-0 flex-1 bg-transparent text-white outline-none placeholder:text-neutral-500"
+                    className="h-auto min-w-0 flex-1 border-0 bg-transparent px-0 py-0 text-sm text-white placeholder:text-neutral-500 focus-visible:border-0 focus-visible:ring-0"
                   />
                 </label>
               </form>
