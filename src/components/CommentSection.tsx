@@ -66,6 +66,7 @@ export default function CommentSection({ postId, token, myUsername }: Props) {
   function refreshAfterChange() {
     queryClient.invalidateQueries({ queryKey: ["comments", postId] });
     queryClient.invalidateQueries({ queryKey: ["post", postId] });
+    queryClient.invalidateQueries({ queryKey: ["feed"] });
   }
 
   const add = useMutation({

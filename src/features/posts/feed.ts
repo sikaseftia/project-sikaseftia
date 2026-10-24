@@ -2,6 +2,7 @@ import { apiFetch } from "@/lib/api";
 import { toList } from "@/features/users/api";
 import { normalizePost, type Post } from "@/features/posts/api";
 import type { LikeablePost } from "@/features/likes/api";
+import { hasNextPage } from "@/lib/paging";
 
 export const FEED_PAGE_SIZE = 20;
 
@@ -33,13 +34,12 @@ export async function getFeedPage(token: string, page: number): Promise<FeedPage
       : Promise.resolve([] as LikeablePost[]),
   ]);
 
-  const current = followed.pagination?.page ?? page;
-  const total = followed.pagination?.totalPages ?? 1;
-
+  // hasNext: pakai totalPages bila ada; jika tidak, halaman berikutnya ada selama item penuh.
+  const followedItems = toPosts(followed);
   return {
-    items: [...mine, ...toPosts(followed)],
+    items: [...mine, ...followedItems],
     page,
-    hasNext: current < total,
+    hasNext: hasNextPage(followed, page, followedItems.length, FEED_PAGE_SIZE),
   };
 }
 
